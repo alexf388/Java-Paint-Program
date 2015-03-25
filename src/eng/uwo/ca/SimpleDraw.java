@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.lang.Math;
@@ -118,8 +119,24 @@ class SimpleDraw extends JFrame
             }
         } 
         
+        
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
+        }
+        if (shapeType.equals("Oval")) {
+        	
+            if (x1 < x2 && y1 < y2) {
+                shape = new Ellipse2D.Double(x1, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 < x2 && y1 > y2) {
+                shape = new Ellipse2D.Double(x1, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 < y2) {
+                shape = new Ellipse2D.Double(x2, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 > y2) {
+                shape = new Ellipse2D.Double(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
         }
         
         if (shape != null) {
@@ -150,10 +167,28 @@ class SimpleDraw extends JFrame
                 shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
             }
         } 
-
+        
+      
            
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
+        }
+        
+        
+        if (shapeType.equals("Oval")) {
+        	
+            if (x1 < x2 && y1 < y2) {
+                shape = new Ellipse2D.Double(x1, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 < x2 && y1 > y2) {
+                shape = new Ellipse2D.Double(x1, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 < y2) {
+                shape = new Ellipse2D.Double(x2, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 > y2) {
+                shape = new Ellipse2D.Double(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
         }
 
         if (shape != null) {
