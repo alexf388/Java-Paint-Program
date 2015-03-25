@@ -117,6 +117,11 @@ class SimpleDraw extends JFrame
                 shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
             }
         } 
+        
+        if (shapeType.equals("Line")) {
+        	shape = new Line2D.Double(x1, y1, x2, y2); 
+        }
+        
         if (shape != null) {
             this.prev = shape;
             this.repaint();
