@@ -41,18 +41,25 @@ class SimpleDraw extends JFrame
 
 
         JRadioButton rectangleButton = new JRadioButton("Rectangle");
+        JRadioButton squareButton = new JRadioButton("Square");
+
 
         cbg.add(lineButton);
         cbg.add(ovalButton);
         cbg.add(rectangleButton);
+        cbg.add(squareButton);
+        
         lineButton.addActionListener(this);
         ovalButton.addActionListener(this);
+        squareButton.addActionListener(this);
         rectangleButton.addActionListener(this);
+        
         rectangleButton.setSelected(true);
         JPanel radioPanel = new JPanel(new FlowLayout());
         radioPanel.add(lineButton);
         radioPanel.add(ovalButton);
         radioPanel.add(rectangleButton);
+        radioPanel.add(squareButton);
         this.addMouseListener(this);
 
         this.addMouseMotionListener(this);
@@ -118,6 +125,21 @@ class SimpleDraw extends JFrame
                 shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
             }
         } 
+        if (shapeType.equals("Square")) {
+            // a Rectangle cannot have a zero width or height
+            if (x1 < x2 && y1 < y2) {
+                shape = new Rectangle(x1, y1,Math.abs(x2-x1), Math.abs(x2-x1));
+            }
+            else if (x1 < x2 && y1 > y2) {
+                shape = new Rectangle(x1, y2,Math.abs(x2-x1), Math.abs(x2-x1));
+            }
+            else if (x1 > x2 && y1 < y2) {
+                shape = new Rectangle(x2, y1,Math.abs(x2-x1), Math.abs(x2-x1));
+            }
+            else if (x1 > x2 && y1 > y2) {
+                shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(x2-x1));
+            }
+        } 
         
         
         if (shapeType.equals("Line")) {
@@ -168,14 +190,24 @@ class SimpleDraw extends JFrame
             }
         } 
         
-       /* if (shapeType.equals("Line")) {
+    /*    if (shapeType.equals("Square")) {
             // a Rectangle cannot have a zero width or height
 
             if (x1 < x2 && y1 < y2) {
-                shape = new Line2D.Double(x1, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+                shape = new Rectangle(x1, y1,Math.abs(x2-x1), Math.abs(y2-y1));
             }
-            
+            else if (x1 < x2 && y1 > y2) {
+                shape = new Rectangle(x1, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 < y2) {
+                shape = new Rectangle(x2, y1,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
+            else if (x1 > x2 && y1 > y2) {
+                shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
+            }
         } */
+        
+      
            
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
@@ -197,6 +229,8 @@ class SimpleDraw extends JFrame
                 shape = new Ellipse2D.Double(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
             }
         }
+        
+        
 
         if (shape != null) {
             this.shapes.add(shape);
