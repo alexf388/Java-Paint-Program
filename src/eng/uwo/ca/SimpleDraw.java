@@ -10,10 +10,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.lang.Math;
 
-<<<<<<< HEAD
 import javax.swing.*;
 
 class SimpleDraw extends JFrame
@@ -30,40 +30,6 @@ class SimpleDraw extends JFrame
     Shape prev = null;
     String shapeType = "Rectangle";
 
-=======
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
-import java.util.ArrayList;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-
-public class SimpleDraw extends JFrame
-        implements ActionListener, MouseListener {
-    // (x1,y1) = coordinate of mouse pressed
-    // (x2,y2) = coordinate of mouse released
-    int x1;
-    int y1;
-    int x2;
-
-    int y2;
-
-    ArrayList<Shape> shapes = new ArrayList<Shape>();
-
-    String shapeType = "Rectangle";
-
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
     public SimpleDraw() {
         this.setTitle("Simple DRAW");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,12 +37,10 @@ public class SimpleDraw extends JFrame
         ButtonGroup cbg = new ButtonGroup();
         JRadioButton lineButton = new JRadioButton("Line");
         JRadioButton ovalButton = new JRadioButton("Oval");
-<<<<<<< HEAD
-        JRadioButton rectangleButton =
-                new JRadioButton("Rectangle");
-=======
+
+
         JRadioButton rectangleButton = new JRadioButton("Rectangle");
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
+
         cbg.add(lineButton);
         cbg.add(ovalButton);
         cbg.add(rectangleButton);
@@ -89,11 +53,10 @@ public class SimpleDraw extends JFrame
         radioPanel.add(ovalButton);
         radioPanel.add(rectangleButton);
         this.addMouseListener(this);
-<<<<<<< HEAD
+
         this.addMouseMotionListener(this);
 
-=======
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
+
         this.setLayout(new BorderLayout());
         this.add(radioPanel, BorderLayout.NORTH);
     }
@@ -104,14 +67,13 @@ public class SimpleDraw extends JFrame
           Graphics2D g2 = (Graphics2D)g;  
           g2.draw(shape);
         }
-<<<<<<< HEAD
+
         if (prev!=null){
         	Graphics2D g2 = (Graphics2D)g;  
             g2.draw(prev);
         }
         
-=======
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
+
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -132,7 +94,7 @@ public class SimpleDraw extends JFrame
         x1 = me.getX();
         y1 = me.getY();
     }
-<<<<<<< HEAD
+
     
     public void mouseDragged(MouseEvent me) {
     	
@@ -161,8 +123,7 @@ public class SimpleDraw extends JFrame
         }
     	
     }
-=======
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
+
 
     public void mouseReleased(MouseEvent me) {
         x2 = me.getX();
@@ -170,7 +131,7 @@ public class SimpleDraw extends JFrame
         Shape shape = null;
         if (shapeType.equals("Rectangle")) {
             // a Rectangle cannot have a zero width or height
-<<<<<<< HEAD
+
             if (x1 < x2 && y1 < y2) {
                 shape = new Rectangle(x1, y1,Math.abs(x2-x1), Math.abs(y2-y1));
             }
@@ -184,15 +145,12 @@ public class SimpleDraw extends JFrame
                 shape = new Rectangle(x2, y2,Math.abs(x2-x1), Math.abs(y2-y1));
             }
         } 
-=======
-            //if (x1 != x2 || y1 != y2) {
-                shape = new Rectangle(x1, y1, x2-x1, y2-y1);
-            //}
-        }
+
+           
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
         }
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
+
         if (shape != null) {
             this.shapes.add(shape);
             this.repaint();
@@ -205,13 +163,11 @@ public class SimpleDraw extends JFrame
         frame.pack();
         frame.setVisible(true);
     }
-<<<<<<< HEAD
+
 
 	@Override
 	public void mouseMoved(MouseEvent arg0) {
 		// TODO Auto-generated method stub
 		
 	}
-=======
->>>>>>> f0573671e2aa7cbe03a0fd523bb81d8dfb353feb
 }
