@@ -36,20 +36,26 @@ class SimpleDraw extends JFrame
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // add check box group
         ButtonGroup cbg = new ButtonGroup();
+        JRadioButton freehandButton = new JRadioButton("FreeHand"); 
         JRadioButton lineButton = new JRadioButton("Line");
         JRadioButton ovalButton = new JRadioButton("Oval");
-
-
         JRadioButton rectangleButton = new JRadioButton("Rectangle");
 
+        cbg.add(freehandButton);
         cbg.add(lineButton);
         cbg.add(ovalButton);
         cbg.add(rectangleButton);
+        
+        freehandButton.addActionListener(this); 
         lineButton.addActionListener(this);
         ovalButton.addActionListener(this);
         rectangleButton.addActionListener(this);
         rectangleButton.setSelected(true);
+        
+        
         JPanel radioPanel = new JPanel(new FlowLayout());
+        
+        radioPanel.add(freehandButton); 
         radioPanel.add(lineButton);
         radioPanel.add(ovalButton);
         radioPanel.add(rectangleButton);
@@ -119,6 +125,11 @@ class SimpleDraw extends JFrame
             }
         } 
         
+        if (shapeType.equals("FreeHand")){
+        	shape = new Line2D.Double(x1, y1, x2, y2); 
+        	x1 = x2; 
+        	y1 = y2; 
+        }
         
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
@@ -141,6 +152,10 @@ class SimpleDraw extends JFrame
         
         if (shape != null) {
             this.prev = shape;
+            this.repaint();
+        }
+        if (shape != null && shapeType.equals("FreeHand")){
+        	this.shapes.add(shape);
             this.repaint();
         }
     	
@@ -168,7 +183,11 @@ class SimpleDraw extends JFrame
             }
         } 
         
-      
+        if (shapeType.equals("FreeHand")){
+        	shape = new Line2D.Double(x1, y1, x2, y2); 
+        	x1 = x2; 
+        	y1 = y2; 
+        }
            
         if (shapeType.equals("Line")) {
         	shape = new Line2D.Double(x1, y1, x2, y2); 
