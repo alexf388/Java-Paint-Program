@@ -40,6 +40,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		JRadioButton ovalButton = new JRadioButton("Oval");
 		JRadioButton circleButton = new JRadioButton("Circle");
 		JRadioButton rectangleButton = new JRadioButton("Rectangle");
+		JRadioButton squareButton = new JRadioButton("Square");
 		JRadioButton openPolygonButton = new JRadioButton("OpenPolygon");
 		JRadioButton closedPolygonButton = new JRadioButton("ClosedPolygon");
 
@@ -48,6 +49,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		cbg.add(ovalButton);
 		cbg.add(circleButton);
 		cbg.add(rectangleButton);
+		cbg.add(squareButton);
 		cbg.add(openPolygonButton);
 		cbg.add(closedPolygonButton);
 
@@ -56,6 +58,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		ovalButton.addActionListener(this);
 		circleButton.addActionListener(this);
 		rectangleButton.addActionListener(this);
+		squareButton.addActionListener(this);
 		openPolygonButton.addActionListener(this);
 		closedPolygonButton.addActionListener(this);
 
@@ -68,6 +71,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		radioPanel.add(ovalButton);
 		radioPanel.add(circleButton);
 		radioPanel.add(rectangleButton);
+		radioPanel.add(squareButton);
 		radioPanel.add(openPolygonButton);
 		radioPanel.add(closedPolygonButton);
 		this.addMouseListener(this);
@@ -117,9 +121,12 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 
 		x2 = me.getX();
 		y2 = me.getY();
+
+		int x1_old = x1;
+
 		Shape shape = null;
-		if ( SwingUtilities.isLeftMouseButton(me)) {
-			
+		if (SwingUtilities.isLeftMouseButton(me)) {
+
 			if (shapeType.equals("Rectangle")) {
 				// a Rectangle cannot have a zero width or height
 				if (x1 < x2 && y1 < y2) {
@@ -130,6 +137,28 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					shape = new Rectangle(x2, y1, Math.abs(x2 - x1), Math.abs(y2 - y1));
 				} else if (x1 > x2 && y1 > y2) {
 					shape = new Rectangle(x2, y2, Math.abs(x2 - x1), Math.abs(y2 - y1));
+				}
+			}
+
+			if (shapeType.equals("Square")) {
+				// quadrant 3
+				if (x1 < x2 && y1 < y2) {
+					shape = new Rectangle(x1, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 2
+				else if (x1 < x2 && y1 > y2 && y2 > 0) {
+					x1 = x1_old;
+					shape = new Rectangle(x1, y2, Math.abs(y2 - y1), Math.abs(y2 - y1));
+				}
+				// quadrant 4
+				else if (x1 > x2 && y1 < y2) {
+					shape = new Rectangle(x2, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 1
+				else if (x1 > x2 && y1 > y2 && y2 > 0) {
+					int width = Math.abs(x2-x1); 	 
+					shape = new Rectangle(x2, y1-width, Math.abs(width), Math.abs(width));
+
 				}
 			}
 
@@ -144,15 +173,25 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("Circle")) {
+				// quadrant 3
 				if (x1 < x2 && y1 < y2) {
 					shape = new Ellipse2D.Double(x1, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 < x2 && y1 > y2) {
-					shape = new Ellipse2D.Double(x1, y2, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 > x2 && y1 < y2) {
-					shape = new Ellipse2D.Double(x2, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 > x2 && y1 > y2) {
-					shape = new Ellipse2D.Double(x2, y2, Math.abs(x2 - x1), Math.abs(x2 - x1));
 				}
+				// quadrant 2
+				else if (x1 < x2 && y1 > y2 && y2 > 0) {
+					x1 = x1_old;
+					shape = new Ellipse2D.Double(x1, y2, Math.abs(y2 - y1), Math.abs(y2 - y1));
+				}
+				// quadrant 4
+				else if (x1 > x2 && y1 < y2) {
+					shape = new Ellipse2D.Double(x2, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 1
+				else if (x1 > x2 && y1 > y2 && y2 > 0) {
+					int width = Math.abs(x2-x1); 	 
+					shape = new Ellipse2D.Double(x2, y1-width, Math.abs(width), Math.abs(width));
+				}
+
 			}
 
 			if (shapeType.equals("Oval")) {
@@ -184,6 +223,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		x2 = me.getX();
 		y2 = me.getY();
 		Shape shape = null;
+		
+		int x1_old = x1; 
 
 		if (me.getButton() == MouseEvent.BUTTON1) {
 			if (shapeType.equals("Rectangle")) {
@@ -200,6 +241,28 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 			}
 
+			if (shapeType.equals("Square")) {
+				// quadrant 3
+				if (x1 < x2 && y1 < y2) {
+					shape = new Rectangle(x1, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 2
+				else if (x1 < x2 && y1 > y2 && y2 > 0) {
+					x1 = x1_old;
+					shape = new Rectangle(x1, y2, Math.abs(y2 - y1), Math.abs(y2 - y1));
+				}
+				// quadrant 4
+				else if (x1 > x2 && y1 < y2) {
+					shape = new Rectangle(x2, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 1
+				else if (x1 > x2 && y1 > y2 && y2 > 0) {
+					int width = Math.abs(x2-x1); 	 
+					shape = new Rectangle(x2, y1-width, Math.abs(width), Math.abs(width));
+
+				}
+			}
+			
 			if (shapeType.equals("FreeHand")) {
 				shape = new Line2D.Double(x1, y1, x2, y2);
 				x1 = x2;
@@ -224,14 +287,23 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("Circle")) {
+				// quadrant 3
 				if (x1 < x2 && y1 < y2) {
 					shape = new Ellipse2D.Double(x1, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 < x2 && y1 > y2) {
-					shape = new Ellipse2D.Double(x1, y2, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 > x2 && y1 < y2) {
+				}
+				// quadrant 2
+				else if (x1 < x2 && y1 > y2 && y2 > 0) {
+					x1 = x1_old;
+					shape = new Ellipse2D.Double(x1, y2, Math.abs(y2 - y1), Math.abs(y2 - y1));
+				}
+				// quadrant 4
+				else if (x1 > x2 && y1 < y2) {
 					shape = new Ellipse2D.Double(x2, y1, Math.abs(x2 - x1), Math.abs(x2 - x1));
-				} else if (x1 > x2 && y1 > y2) {
-					shape = new Ellipse2D.Double(x2, y2, Math.abs(x2 - x1), Math.abs(x2 - x1));
+				}
+				// quadrant 1
+				else if (x1 > x2 && y1 > y2 && y2 > 0) {
+					int width = Math.abs(x2-x1); 	 
+					shape = new Ellipse2D.Double(x2, y1-width, Math.abs(width), Math.abs(width));
 				}
 			}
 		}
