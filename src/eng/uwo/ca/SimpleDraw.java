@@ -3,6 +3,7 @@ package eng.uwo.ca;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,9 +16,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Line2D.Double;
 import java.awt.geom.Path2D.Float;
@@ -178,15 +181,19 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					if (!shapes.isEmpty()) {
 						if (shapes.get(i).contains(me.getX(), me.getY())) {
 							selectedShape = shapes.get(i);
-							handleRectangle = shapes.get(i).getBounds2D();
 
-							this.repaint();
-							x1 = me.getX();
-							y1 = me.getY();
-
+							if (handleRectangle != null)
+								handleRectangle = shapes.get(i).getBounds2D();
+						} else {
+							handleRectangle = null;
 						}
+
 					}
 				}
+
+				this.repaint();
+				x1 = me.getX();
+				y1 = me.getY();
 			}
 
 			// open polygon
@@ -280,7 +287,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					for (int index = 1; index < temp_xPoints.length; index++) {
 						closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
 					}
-					;
+					
 
 					// clear temp_Lines
 					temp_Lines.clear();
@@ -379,62 +386,81 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 						x2 = me.getX();
 						y2 = me.getY();
 
-						//every shape has its own stupid and different way of getting x, y. Thank you Java for this mess. 
-						System.out.println("shape name: " + shapes.get(i).getClass().getSimpleName()); 
-						System.out.println("canonical name: " + shapes.get(i).getClass().getCanonicalName()); 
-						
-						//if the shape is a rectangle 
+						// every shape has its own stupid and different way of
+						// getting x, y. Thank you Java for this mess.
+						System.out.println("shape name: " + shapes.get(i).getClass().getSimpleName());
+						System.out.println("canonical name: " + shapes.get(i).getClass().getCanonicalName());
+
+						// if the shape is a rectangle
 						if (shapes.get(i).getClass().getSimpleName().equals("Rectangle")) {
-							Point origin = ((Rectangle) shapes.get(i)).getLocation();
-							int x = origin.x + x2 - x1;
-							int y = origin.y + y2 - y1;
-
-							((Rectangle) shapes.get(i)).setLocation(x, y);
-							// Class<? extends Shape> newShape =
-							// shapes.get(i).getClass();
-
-							x1 = x2;
-							y1 = y2;
-						}
-						//ellipse 
-						else if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")){
-							Ellipse2D.Double temp = (java.awt.geom.Ellipse2D.Double) shapes.get(i); 
-							System.out.println("Suck a dick"); 
+							Rectangle temp = (Rectangle) shapes.get(i); 
 							
-							temp.x = temp.x + x2 - x1; 
-							temp.y = temp.y + y2 - y1; 
+							double x = temp.getX() + x2 - x1; 
+							double y = temp.getY() + y2 - y1; 
+							double h = temp.getHeight(); 
+							double w = temp.getWidth(); 
+							
+							temp.setFrame(x,y,w,h); 
+							this.prev = temp; 
 							
 							shapes.add(i, temp );
+							shapes.remove(i+1);
+							
+							x1 = x2; 
+							y1 = y2; 
+							
+						}
+						// ellipse
+						else if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")) {
+							Ellipse2D.Double temp = (java.awt.geom.Ellipse2D.Double) shapes.get(i);
+							System.out.println("Suck a dick");
+
+							double h = temp.getHeight();
+							double w = temp.getWidth();
+							double x = temp.x + x2 - x1; 
+							double y = temp.y + y2 - y1; 
+							temp.setFrame(x,y,w,h);
+							
+							this.prev = temp;
+							
+							shapes.add(i, temp );
+							shapes.remove(i+1);
 							
 							x1 = x2;
 							y1 = y2;
 						}
-						//closed polygon
-						else if (shapes.get(i).getClass().getSimpleName().equals("Polygon")){
+						// closed polygon
+						else if (shapes.get(i).getClass().getSimpleName().equals("Polygon")) {
+							System.out.println("Suck more dicks");
 							Polygon temp = (Polygon) shapes.get(i); 
 							
 							//update xPoints 
-							for (int j = 0 ; j < temp.npoints ; j++){
-								temp.xpoints[j] = temp.xpoints[j] + x2 - x1;
-							}
-							//update yPoints 
-							for (int k = 0 ; k < temp.npoints ; k++){
-								temp.ypoints[k] = temp.ypoints[k] + y2 - y1; 
-							}
+							temp.translate(x2-x1, y2-y1);
+							this.prev = temp; 
 							
 							shapes.add(i, temp );
 							shapes.remove(i+1); 
 							
 							x1 = x2;
 							y1 = y2;
-							this.repaint(); 
 						}
-						
-						//open polygon 
-						else if (shapes.get(i).getClass().getSimpleName().equals("GeneralPath")){
-							
+
+						// open polygon
+						else if (shapes.get(i).getClass().getSimpleName().equals("GeneralPath")) {
+								GeneralPath temp = (GeneralPath) shapes.get(i); 
+																
+								AffineTransform at = AffineTransform.getTranslateInstance(x2-x1, y2-y1);
+							    temp.transform(at);
+								
+								this.prev = temp; 
+								
+								shapes.add(i, temp); 
+								shapes.remove(i+1); 
+								
+								x1 = x2; 
+								y1 = y2; 
 						}
-						
+
 						/*
 						 * x2 = me.getX(); y2 = me.getY();
 						 * 
@@ -690,10 +716,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 
 	// main
 	public static void main(String[] args) {
-		JFrame.setDefaultLookAndFeelDecorated(true);
+		//JFrame.setDefaultLookAndFeelDecorated(true);
 		SimpleDraw frame = new SimpleDraw();
 		frame.pack();
 		frame.setVisible(true);
+		frame.setSize(new Dimension(1000,1000));
 	}
 
 	// draw Highlight squares when a shape is selected
