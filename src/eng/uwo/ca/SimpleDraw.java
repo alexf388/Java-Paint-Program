@@ -373,34 +373,63 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			if (shapeType.equals("Select")) {
 				for (int i = 0; i < shapes.size(); i++) {
 					if (shapes.get(i).contains(me.getX(), me.getY())) {
-						
-						//TODO: figure out a way to get the x, y coords of a shape
-						x2 = me.getX(); 
-						y2 = me.getY(); 
 
-						Point origin = ((Rectangle) shapes.get(i)).getLocation(); 
-						int x = origin.x + x2 - x1; 
-						int y = origin.y + y2 -y1; 
-						
-						
-						((Rectangle) shapes.get(i)).setLocation(x,y); 
-						//Class<? extends Shape> newShape = shapes.get(i).getClass();						
-						
-						x1 = x2; 
-						y1 = y2; 
-						
-						/*
+						// TODO: figure out a way to get the x, y coords of a
+						// shape
 						x2 = me.getX();
 						y2 = me.getY();
 
-						x = x + x2 - x1;
-						y = y + y2 - y1;
+						//every shape has its own stupid and different way of getting x, y. Thank you Java for this mess. 
+						System.out.println("shape name: " + shapes.get(i).getClass().getSimpleName()); 
+						System.out.println("canonical name: " + shapes.get(i).getClass().getCanonicalName()); 
+						
+						//if the shape is a rectangle 
+						if (shapes.get(i).getClass().getSimpleName().equals("Rectangle")) {
+							Point origin = ((Rectangle) shapes.get(i)).getLocation();
+							int x = origin.x + x2 - x1;
+							int y = origin.y + y2 - y1;
 
-						x1 = x2;
-						y1 = y2;
-						*/
+							((Rectangle) shapes.get(i)).setLocation(x, y);
+							// Class<? extends Shape> newShape =
+							// shapes.get(i).getClass();
+
+							x1 = x2;
+							y1 = y2;
+						}
+						//ellipse 
+						if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")){
+							Ellipse2D.Double temp = (java.awt.geom.Ellipse2D.Double) shapes.get(i); 
+							System.out.println("Suck a dick"); 
+							
+							temp.x = temp.x + x2 - x1; 
+							temp.y = temp.y + y2 - y1; 
+							
+							shapes.add(i, temp );
+							shapes.remove(i+1); 
+							//temp.
+							
+							x1 = x2;
+							y1 = y2;
+						}
+						//closed polygon
+						if (shapes.get(i).getClass().getSimpleName().equals("Polygon")){
+							
+						}
+						
+						//open polygon 
+						if (shapes.get(i).getClass().getSimpleName().equals("GeneralPath")){
+							
+						}
+						
+						/*
+						 * x2 = me.getX(); y2 = me.getY();
+						 * 
+						 * x = x + x2 - x1; y = y + y2 - y1;
+						 * 
+						 * x1 = x2; y1 = y2;
+						 */
 					}
-					this.repaint(); 
+					this.repaint();
 				}
 			}
 
@@ -505,19 +534,18 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		int x1_old = x1;
 
 		if (SwingUtilities.isLeftMouseButton(me)) {
-			
-			//Select
-			if (shapeType.equals("Select")){
-				for (int i = 0 ; i < shapes.size(); i++){
+
+			// Select
+			if (shapeType.equals("Select")) {
+				for (int i = 0; i < shapes.size(); i++) {
 					if (shapes.get(i).contains(me.getX(), me.getY())) {
-				          handleRectangle = shapes.get(i).getBounds2D();
-				          selectedShape = shapes.get(i);
-				        }
-				        this.repaint();
+						handleRectangle = shapes.get(i).getBounds2D();
+						selectedShape = shapes.get(i);
+					}
+					this.repaint();
 				}
 			}
-			
-			
+
 			if (shapeType.equals("Rectangle")) {
 				// a Rectangle cannot have a zero width or height
 
