@@ -405,15 +405,28 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 							temp.y = temp.y + y2 - y1; 
 							
 							shapes.add(i, temp );
-							shapes.remove(i+1); 
-							//temp.
 							
 							x1 = x2;
 							y1 = y2;
 						}
 						//closed polygon
 						if (shapes.get(i).getClass().getSimpleName().equals("Polygon")){
+							Polygon temp = (Polygon) shapes.get(i); 
 							
+							//update xPoints 
+							for (int j = 0 ; j < temp.npoints ; j++){
+								temp.xpoints[j] = temp.xpoints[j] + x2 - x1;
+							}
+							//update yPoints 
+							for (int k = 0 ; k < temp.npoints ; k++){
+								temp.ypoints[k] = temp.ypoints[k] + y2 - y1; 
+							}
+							
+							shapes.add(i, temp );
+							shapes.remove(i+1); 
+							
+							x1 = x2;
+							y1 = y2;
 						}
 						
 						//open polygon 
