@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
+import java.util.List;
 import java.lang.Math;
 
 import javax.swing.*;
@@ -26,9 +29,26 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	int x2;
 	int y2;
 
+	// polygon global variables
+	boolean polygon_first = true;
+	ArrayList<Integer> polygon_xPoints = new ArrayList<Integer>();
+	ArrayList<Integer> polygon_yPoints = new ArrayList<Integer>();
+	ArrayList<Shape> temp_Lines = new ArrayList<Shape>(); 
+
 	ArrayList<Shape> shapes = new ArrayList<Shape>();
 	Shape prev = null;
 	String shapeType = "Rectangle";
+	
+	public static int[] convertIntegers(List<Integer> integers)
+	{
+	    int[] ret = new int[integers.size()];
+	    for (int i=0; i < ret.length; i++)
+	    {
+	        ret[i] = integers.get(i).intValue();
+	    }
+	    return ret;
+	}
+	
 
 	public SimpleDraw() {
 		this.setTitle("Simple DRAW");
@@ -94,6 +114,15 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			g2.draw(prev);
 		}
 
+		/*
+		if (!temp_Lines.isEmpty()){
+			for (Shape shape : shapes) {
+				Graphics2D g2 = (Graphics2D) g;
+				g2.draw(shape);
+			}
+		}
+		*/
+
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -111,10 +140,86 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	}
 
 	public void mousePressed(MouseEvent me) {
-		if (me.getButton() == MouseEvent.BUTTON1) {
-			x1 = me.getX();
-			y1 = me.getY();
+		//variables
+		Shape shape = null;
+		
+		// if left mouse button
+		if (SwingUtilities.isLeftMouseButton(me)) {
+			//System.out.println("LEFT CLICK!!!"); 
+			
+			// closed Polygon
+			if (shapeType.equals("ClosedPolygon")) {
+				System.out.println("Closed Polygon"); 
+				// if first time
+				if (polygon_first) {
+					//System.out.println("FIRST TIME"); 
+					x1 = me.getX();
+					y1 = me.getY();
+
+					polygon_xPoints.add(x1);
+					polygon_yPoints.add(y1);
+
+					polygon_first = false;
+				}
+				// else if not first time
+				else {
+					//System.out.println("Not first time"); 
+					x2 = me.getX();
+					y2 = me.getY();
+
+					polygon_xPoints.add(x2);
+					polygon_yPoints.add(y2);
+					
+					shape = new Line2D.Double(x1, y1, x2, y2); 
+					x1 = x2; 
+					y1 = y2; 
+				}
+			}
+			// for any other shape
+			else {
+				x1 = me.getX();
+				y1 = me.getY();
+			}
+			
+			
 		}
+
+		// if right mouse button
+		if (SwingUtilities.isRightMouseButton(me)) {
+
+			// closed Polygon
+			if (shapeType.equals("ClosedPolygon")) {
+
+				//if not just initial x, y
+				if (polygon_xPoints.size() > 1){
+					int[] temp_xPoints = new int[polygon_xPoints.size()]; 
+					int[] temp_yPoints = new int[polygon_yPoints.size()];
+					
+					temp_xPoints = convertIntegers(polygon_xPoints); 
+					temp_yPoints = convertIntegers(polygon_yPoints); 
+					
+					shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size()); 
+					
+					polygon_first = true; 
+				}
+				//else clear the arraylist
+				else{
+					polygon_xPoints.clear();
+					polygon_yPoints.clear(); 
+					
+					polygon_first = true; 
+					this.prev = null; 
+					this.repaint();
+				}
+				
+			}
+
+		}
+		if (shape != null) {
+			this.shapes.add(shape);
+			this.repaint();
+		}
+
 	}
 
 	public void mouseDragged(MouseEvent me) {
@@ -156,8 +261,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 				// quadrant 1
 				else if (x1 > x2 && y1 > y2 && y2 > 0) {
-					int width = Math.abs(x2-x1); 	 
-					shape = new Rectangle(x2, y1-width, Math.abs(width), Math.abs(width));
+					int width = Math.abs(x2 - x1);
+					shape = new Rectangle(x2, y1 - width, Math.abs(width), Math.abs(width));
 
 				}
 			}
@@ -188,8 +293,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 				// quadrant 1
 				else if (x1 > x2 && y1 > y2 && y2 > 0) {
-					int width = Math.abs(x2-x1); 	 
-					shape = new Ellipse2D.Double(x2, y1-width, Math.abs(width), Math.abs(width));
+					int width = Math.abs(x2 - x1);
+					shape = new Ellipse2D.Double(x2, y1 - width, Math.abs(width), Math.abs(width));
 				}
 
 			}
@@ -206,6 +311,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					shape = new Ellipse2D.Double(x2, y2, Math.abs(x2 - x1), Math.abs(y2 - y1));
 				}
 			}
+
 		}
 
 		if (shape != null) {
@@ -223,10 +329,10 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		x2 = me.getX();
 		y2 = me.getY();
 		Shape shape = null;
-		
-		int x1_old = x1; 
 
-		if (me.getButton() == MouseEvent.BUTTON1) {
+		int x1_old = x1;
+
+		if (SwingUtilities.isLeftMouseButton(me)) {
 			if (shapeType.equals("Rectangle")) {
 				// a Rectangle cannot have a zero width or height
 
@@ -257,12 +363,12 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 				// quadrant 1
 				else if (x1 > x2 && y1 > y2 && y2 > 0) {
-					int width = Math.abs(x2-x1); 	 
-					shape = new Rectangle(x2, y1-width, Math.abs(width), Math.abs(width));
+					int width = Math.abs(x2 - x1);
+					shape = new Rectangle(x2, y1 - width, Math.abs(width), Math.abs(width));
 
 				}
 			}
-			
+
 			if (shapeType.equals("FreeHand")) {
 				shape = new Line2D.Double(x1, y1, x2, y2);
 				x1 = x2;
@@ -302,8 +408,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 				// quadrant 1
 				else if (x1 > x2 && y1 > y2 && y2 > 0) {
-					int width = Math.abs(x2-x1); 	 
-					shape = new Ellipse2D.Double(x2, y1-width, Math.abs(width), Math.abs(width));
+					int width = Math.abs(x2 - x1);
+					shape = new Ellipse2D.Double(x2, y1 - width, Math.abs(width), Math.abs(width));
 				}
 			}
 		}
@@ -314,6 +420,26 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		}
 	}
 
+	@Override
+	public void mouseMoved(MouseEvent me) {
+		//temporarily draws lines for closed Polygon so user can see them 
+		Shape shape = null;
+		
+		if (shapeType.equals("ClosedPolygon") && !polygon_first) {
+			//get coords
+			x2 = me.getX();
+			y2 = me.getY();
+			
+
+			shape = new Line2D.Double(x1, y1, x2, y2); 
+		}
+		if (shape != null) {
+			this.prev = shape;
+			this.repaint();
+		}
+	}
+
+	// main
 	public static void main(String[] args) {
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		SimpleDraw frame = new SimpleDraw();
@@ -321,9 +447,4 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		frame.setVisible(true);
 	}
 
-	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
 }
