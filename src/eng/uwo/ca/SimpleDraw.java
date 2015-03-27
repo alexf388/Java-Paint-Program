@@ -389,6 +389,13 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		y2 = me.getY();
 
 		int x1_old = x1;
+		
+		int boxX = me.getX() - HIT_BOX_SIZE/2; 
+		int boxY = me.getY() - HIT_BOX_SIZE/2; 
+		
+		int boxWidth = HIT_BOX_SIZE; 
+		int boxHeight = HIT_BOX_SIZE; 
+		
 
 		Shape shape = null;
 		if (SwingUtilities.isLeftMouseButton(me)) {
@@ -486,6 +493,33 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 						 * x1 = x2; y1 = y2;
 						 */
 					}
+					else if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight) && selectedShape.equals(shapes.get(i))){
+						System.out.println("Fuck this motherfucker"); 
+						System.out.println("shape name: " + shapes.get(i).getClass().getSimpleName());
+						System.out.println("canonical name: " + shapes.get(i).getClass().getCanonicalName());
+						
+						if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Line2D.Double")){
+							System.out.println("Dragging"); 
+							Line2D.Double temp = (Line2D.Double) shapes.get(i); 
+							
+							double x1_original = temp.getX1() + x2 - x1; 
+							double x2_original = temp.getX2() + x2 - x1; 
+							double y1_original = temp.getY1() + y2 - y1; 
+							double y2_original = temp.getY2() + y2 - y1; 
+							
+							//temp = new Line2D.Double(x1_original, y1_original, x2_original, y2_original); 
+							temp.setLine(x1_original, y1_original, x2_original, y2_original); 
+							
+							
+							this.prev = temp; 
+							shapes.add(i, temp); 
+							shapes.remove(i+1); 
+							
+							x1 = x2; 
+							y1 = y2; 
+						}
+					}
+					
 					this.repaint();
 				}
 			}
