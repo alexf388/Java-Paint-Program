@@ -223,9 +223,6 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				// if there is more than one point (i.e. shape with at least two
 				// points by definition is a polygon)
 				if (polygon_xPoints.size() > 1) {
-					//TODO: not sure if I need to add the origin points to the end of the arrayLists
-					//polygon_xPoints.add(polygon_xPoints.get(0)); 
-					//polygon_yPoints.add(polygon_yPoints.get(0)); 
 					
 					int[] temp_xPoints = new int[polygon_xPoints.size()];
 					int[] temp_yPoints = new int[polygon_yPoints.size()];
@@ -233,15 +230,12 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					temp_xPoints = convertIntegers(polygon_xPoints);
 					temp_yPoints = convertIntegers(polygon_yPoints);
 
-					// TODO: figure out how to create open Polygon
-					//shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size());
 					closed_polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD,temp_xPoints.length); 
 					closed_polygon.moveTo(temp_xPoints[0], temp_yPoints[0]); 
 					
 					for ( int index = 1; index < temp_xPoints.length; index++ ) {
 			            closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
 			        };
-			        //closed_polygon.closePath();
 					
 					
 					// clear temp_Lines
