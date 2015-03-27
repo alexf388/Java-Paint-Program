@@ -37,7 +37,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	int y1;
 	int x2;
 	int y2;
-
+	private static final int HIT_BOX_SIZE = 2; 
+	
 	// select global variables
 	Shape selectedShape;
 	Rectangle2D handleRectangle;
@@ -169,6 +170,12 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		// variables
 		Shape shape = null;
 		GeneralPath closed_polygon = null;
+		
+		int boxX = me.getX() - HIT_BOX_SIZE/2; 
+		int boxY = me.getY() - HIT_BOX_SIZE/2; 
+		
+		int boxWidth = HIT_BOX_SIZE; 
+		int boxHeight = HIT_BOX_SIZE; 
 
 		// if left mouse button
 		if (SwingUtilities.isLeftMouseButton(me)) {
@@ -185,6 +192,16 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 							if (handleRectangle != null)
 								handleRectangle = shapes.get(i).getBounds2D();
 						} else {
+							handleRectangle = null;
+						}
+						
+						if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)){
+							System.out.println("COME ON MOTHERFUCKER"); 
+							selectedShape = shapes.get(i); 
+							
+							if (handleRectangle != null)
+								handleRectangle = shapes.get(i).getBounds2D();
+						} else{
 							handleRectangle = null;
 						}
 
@@ -570,9 +587,14 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		x2 = me.getX();
 		y2 = me.getY();
 		Shape shape = null;
-
 		int x1_old = x1;
 
+		int boxX = me.getX() - HIT_BOX_SIZE/2; 
+		int boxY = me.getY() - HIT_BOX_SIZE/2; 
+		
+		int boxWidth = HIT_BOX_SIZE; 
+		int boxHeight = HIT_BOX_SIZE; 
+		
 		if (SwingUtilities.isLeftMouseButton(me)) {
 
 			// Select
@@ -581,6 +603,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					if (shapes.get(i).contains(me.getX(), me.getY())) {
 						handleRectangle = shapes.get(i).getBounds2D();
 						selectedShape = shapes.get(i);
+					}
+					
+					if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)){
+						handleRectangle = shapes.get(i).getBounds2D(); 
+						selectedShape = shapes.get(i); 
 					}
 					this.repaint();
 				}
@@ -677,17 +704,31 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	public void mouseMoved(MouseEvent me) {
 		// temporarily draws lines for closed Polygon so user can see them
 		Shape shape = null;
+		
+		int boxX = me.getX() - HIT_BOX_SIZE/2; 
+		int boxY = me.getY() - HIT_BOX_SIZE/2; 
+		
+		int boxWidth = HIT_BOX_SIZE; 
+		int boxHeight = HIT_BOX_SIZE; 
+		
 
 		// TODO: cursor changes when you hover over a shape
 		if (shapeType.equals("Select")) {
 			for (int i = 0; i < shapes.size(); i++) {
 				if (!shapes.isEmpty()) {
 					if (shapes.get(i).contains(me.getX(), me.getY())) {
-						// System.out.println("FOUND THE SHAPE");
+						System.out.println("FOUND THE SHAPE");
 						curCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 					} else {
 						curCursor = Cursor.getDefaultCursor();
 					}
+					if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)){
+						System.out.println("FOUND THE SHAPE2");
+						curCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+					}else{
+						curCursor = Cursor.getDefaultCursor(); 
+					}
+					
 				}
 				this.repaint();
 			}
