@@ -114,14 +114,14 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			g2.draw(prev);
 		}
 
-		/*
+		
 		if (!temp_Lines.isEmpty()){
-			for (Shape shape : shapes) {
+			for (Shape shape : temp_Lines) {
 				Graphics2D g2 = (Graphics2D) g;
 				g2.draw(shape);
 			}
 		}
-		*/
+		
 
 	}
 
@@ -174,6 +174,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					x1 = x2; 
 					y1 = y2; 
 				}
+				
+				if (shape != null) {
+					this.temp_Lines.add(shape);
+					this.repaint();
+				}
 			}
 			// for any other shape
 			else {
@@ -190,7 +195,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			// closed Polygon
 			if (shapeType.equals("ClosedPolygon")) {
 
-				//if not just initial x, y
+				//if there is more than one point (i.e. shape  with at least two points by definition is a polygon) 
 				if (polygon_xPoints.size() > 1){
 					int[] temp_xPoints = new int[polygon_xPoints.size()]; 
 					int[] temp_yPoints = new int[polygon_yPoints.size()];
@@ -200,7 +205,14 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					
 					shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size()); 
 					
+					//clear temp_Lines 
+					temp_Lines.clear(); 
+					
+					polygon_xPoints.clear(); 
+					polygon_yPoints.clear(); 
 					polygon_first = true; 
+					this.prev = null; 
+					this.repaint(); 
 				}
 				//else clear the arraylist
 				else{
@@ -212,13 +224,16 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					this.repaint();
 				}
 				
+				//if the shape isn't null, add the shape to shapes to be drawn
+				if (shape != null) {
+					this.shapes.add(shape);
+					this.repaint();
+				}
+				
 			}
 
 		}
-		if (shape != null) {
-			this.shapes.add(shape);
-			this.repaint();
-		}
+		
 
 	}
 
