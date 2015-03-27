@@ -1,9 +1,12 @@
 package eng.uwo.ca;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -15,6 +18,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.Line2D.Double;
 import java.awt.geom.Path2D.Float;
 import java.util.ArrayList;
@@ -30,6 +34,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	int y1;
 	int x2;
 	int y2;
+
+	// select global variables
+	Shape selectedShape;
+	Rectangle2D handleRectangle;
+	Cursor curCursor;
 
 	// polygon global variables
 	boolean polygon_first = true;
@@ -62,6 +71,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		JRadioButton squareButton = new JRadioButton("Square");
 		JRadioButton openPolygonButton = new JRadioButton("OpenPolygon");
 		JRadioButton closedPolygonButton = new JRadioButton("ClosedPolygon");
+		JRadioButton selectButton = new JRadioButton("Select");
 
 		cbg.add(freehandButton);
 		cbg.add(lineButton);
@@ -71,6 +81,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		cbg.add(squareButton);
 		cbg.add(openPolygonButton);
 		cbg.add(closedPolygonButton);
+		cbg.add(selectButton);
 
 		freehandButton.addActionListener(this);
 		lineButton.addActionListener(this);
@@ -80,7 +91,9 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		squareButton.addActionListener(this);
 		openPolygonButton.addActionListener(this);
 		closedPolygonButton.addActionListener(this);
+		selectButton.addActionListener(this);
 
+		// rectangleButton is default
 		rectangleButton.setSelected(true);
 
 		JPanel radioPanel = new JPanel(new FlowLayout());
@@ -93,6 +106,8 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		radioPanel.add(squareButton);
 		radioPanel.add(openPolygonButton);
 		radioPanel.add(closedPolygonButton);
+		radioPanel.add(selectButton);
+
 		this.addMouseListener(this);
 
 		this.addMouseMotionListener(this);
@@ -120,6 +135,17 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			}
 		}
 
+		// if there is something in the handlerectangle (i.e. a shape is
+		// selected),
+		// call the function to draw black boxes around the selected shape
+		if (handleRectangle != null) {
+			Graphics2D g2 = (Graphics2D) g;
+			drawHighlightSquares(g2, handleRectangle);
+		}
+
+		if (curCursor != null)
+			setCursor(curCursor);
+
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -139,11 +165,29 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	public void mousePressed(MouseEvent me) {
 		// variables
 		Shape shape = null;
-		GeneralPath closed_polygon = null; 
+		GeneralPath closed_polygon = null;
 
 		// if left mouse button
 		if (SwingUtilities.isLeftMouseButton(me)) {
 			// System.out.println("LEFT CLICK!!!");
+
+			// TODO: select function when you left-click on a shape
+			// select
+			if (shapeType.equals("Select")) {
+				for (int i = 0; i < shapes.size(); i++) {
+					if (!shapes.isEmpty()) {
+						if (shapes.get(i).contains(me.getX(), me.getY())) {
+							selectedShape = shapes.get(i);
+							handleRectangle = shapes.get(i).getBounds2D();
+
+							this.repaint();
+							x1 = me.getX();
+							y1 = me.getY();
+
+						}
+					}
+				}
+			}
 
 			// open polygon
 			if (shapeType.equals("OpenPolygon")) {
@@ -223,21 +267,21 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				// if there is more than one point (i.e. shape with at least two
 				// points by definition is a polygon)
 				if (polygon_xPoints.size() > 1) {
-					
+
 					int[] temp_xPoints = new int[polygon_xPoints.size()];
 					int[] temp_yPoints = new int[polygon_yPoints.size()];
 
 					temp_xPoints = convertIntegers(polygon_xPoints);
 					temp_yPoints = convertIntegers(polygon_yPoints);
 
-					closed_polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD,temp_xPoints.length); 
-					closed_polygon.moveTo(temp_xPoints[0], temp_yPoints[0]); 
-					
-					for ( int index = 1; index < temp_xPoints.length; index++ ) {
-			            closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
-			        };
-					
-					
+					closed_polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD, temp_xPoints.length);
+					closed_polygon.moveTo(temp_xPoints[0], temp_yPoints[0]);
+
+					for (int index = 1; index < temp_xPoints.length; index++) {
+						closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
+					}
+					;
+
 					// clear temp_Lines
 					temp_Lines.clear();
 
@@ -262,11 +306,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 					this.shapes.add(shape);
 					this.repaint();
 				}
-				//if closed_polygon isn't null, add the shape to shapes to be drawn 
-				if (closed_polygon != null ){
-					//TODO: not sure if a separate container for general path is needed 
-					this.shapes.add(closed_polygon); 
-					this.repaint(); 
+				// if closed_polygon isn't null, add the shape to shapes to be
+				// drawn
+				if (closed_polygon != null) {
+					this.shapes.add(closed_polygon);
+					this.repaint();
 				}
 			}
 
@@ -324,6 +368,41 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 
 		Shape shape = null;
 		if (SwingUtilities.isLeftMouseButton(me)) {
+
+			// if select
+			if (shapeType.equals("Select")) {
+				for (int i = 0; i < shapes.size(); i++) {
+					if (shapes.get(i).contains(me.getX(), me.getY())) {
+						
+						//TODO: figure out a way to get the x, y coords of a shape
+						x2 = me.getX(); 
+						y2 = me.getY(); 
+
+						Point origin = ((Rectangle) shapes.get(i)).getLocation(); 
+						int x = origin.x + x2 - x1; 
+						int y = origin.y + y2 -y1; 
+						
+						
+						((Rectangle) shapes.get(i)).setLocation(x,y); 
+						//Class<? extends Shape> newShape = shapes.get(i).getClass();						
+						
+						x1 = x2; 
+						y1 = y2; 
+						
+						/*
+						x2 = me.getX();
+						y2 = me.getY();
+
+						x = x + x2 - x1;
+						y = y + y2 - y1;
+
+						x1 = x2;
+						y1 = y2;
+						*/
+					}
+					this.repaint(); 
+				}
+			}
 
 			if (shapeType.equals("Rectangle")) {
 				// a Rectangle cannot have a zero width or height
@@ -426,6 +505,19 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		int x1_old = x1;
 
 		if (SwingUtilities.isLeftMouseButton(me)) {
+			
+			//Select
+			if (shapeType.equals("Select")){
+				for (int i = 0 ; i < shapes.size(); i++){
+					if (shapes.get(i).contains(me.getX(), me.getY())) {
+				          handleRectangle = shapes.get(i).getBounds2D();
+				          selectedShape = shapes.get(i);
+				        }
+				        this.repaint();
+				}
+			}
+			
+			
 			if (shapeType.equals("Rectangle")) {
 				// a Rectangle cannot have a zero width or height
 
@@ -518,6 +610,21 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		// temporarily draws lines for closed Polygon so user can see them
 		Shape shape = null;
 
+		// TODO: cursor changes when you hover over a shape
+		if (shapeType.equals("Select")) {
+			for (int i = 0; i < shapes.size(); i++) {
+				if (!shapes.isEmpty()) {
+					if (shapes.get(i).contains(me.getX(), me.getY())) {
+						// System.out.println("FOUND THE SHAPE");
+						curCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+					} else {
+						curCursor = Cursor.getDefaultCursor();
+					}
+				}
+				this.repaint();
+			}
+		}
+
 		if (shapeType.equals("OpenPolygon") && !polygon_first) {
 			// get coords
 			x2 = me.getX();
@@ -545,6 +652,24 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 		SimpleDraw frame = new SimpleDraw();
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	// draw Highlight squares when a shape is selected
+	public void drawHighlightSquares(Graphics2D g2D, Rectangle2D r) {
+		double x = r.getX();
+		double y = r.getY();
+		double w = r.getWidth();
+		double h = r.getHeight();
+		g2D.setColor(Color.black);
+
+		g2D.fill(new Rectangle.Double(x - 3.0, y - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x + w * 0.5 - 3.0, y - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x + w - 3.0, y - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x - 3.0, y + h * 0.5 - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x + w - 3.0, y + h * 0.5 - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x - 3.0, y + h - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x + w * 0.5 - 3.0, y + h - 3.0, 6.0, 6.0));
+		g2D.fill(new Rectangle.Double(x + w - 3.0, y + h - 3.0, 6.0, 6.0));
 	}
 
 }
