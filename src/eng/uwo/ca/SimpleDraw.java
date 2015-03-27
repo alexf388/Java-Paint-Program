@@ -372,7 +372,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			// if select
 			if (shapeType.equals("Select")) {
 				for (int i = 0; i < shapes.size(); i++) {
-					if (shapes.get(i).contains(me.getX(), me.getY())) {
+					if (shapes.get(i).contains(me.getX(), me.getY()) && selectedShape.equals(shapes.get(i))) {
 
 						// TODO: figure out a way to get the x, y coords of a
 						// shape
@@ -397,7 +397,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 							y1 = y2;
 						}
 						//ellipse 
-						if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")){
+						else if (shapes.get(i).getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")){
 							Ellipse2D.Double temp = (java.awt.geom.Ellipse2D.Double) shapes.get(i); 
 							System.out.println("Suck a dick"); 
 							
@@ -410,7 +410,7 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 							y1 = y2;
 						}
 						//closed polygon
-						if (shapes.get(i).getClass().getSimpleName().equals("Polygon")){
+						else if (shapes.get(i).getClass().getSimpleName().equals("Polygon")){
 							Polygon temp = (Polygon) shapes.get(i); 
 							
 							//update xPoints 
@@ -427,10 +427,11 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 							
 							x1 = x2;
 							y1 = y2;
+							this.repaint(); 
 						}
 						
 						//open polygon 
-						if (shapes.get(i).getClass().getSimpleName().equals("GeneralPath")){
+						else if (shapes.get(i).getClass().getSimpleName().equals("GeneralPath")){
 							
 						}
 						
