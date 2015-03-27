@@ -13,8 +13,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
+import java.awt.geom.Path2D.Float;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Math;
@@ -33,22 +35,19 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	boolean polygon_first = true;
 	ArrayList<Integer> polygon_xPoints = new ArrayList<Integer>();
 	ArrayList<Integer> polygon_yPoints = new ArrayList<Integer>();
-	ArrayList<Shape> temp_Lines = new ArrayList<Shape>(); 
+	ArrayList<Shape> temp_Lines = new ArrayList<Shape>();
 
 	ArrayList<Shape> shapes = new ArrayList<Shape>();
 	Shape prev = null;
 	String shapeType = "Rectangle";
-	
-	public static int[] convertIntegers(List<Integer> integers)
-	{
-	    int[] ret = new int[integers.size()];
-	    for (int i=0; i < ret.length; i++)
-	    {
-	        ret[i] = integers.get(i).intValue();
-	    }
-	    return ret;
+
+	public static int[] convertIntegers(List<Integer> integers) {
+		int[] ret = new int[integers.size()];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = integers.get(i).intValue();
+		}
+		return ret;
 	}
-	
 
 	public SimpleDraw() {
 		this.setTitle("Simple DRAW");
@@ -114,14 +113,12 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 			g2.draw(prev);
 		}
 
-		
-		if (!temp_Lines.isEmpty()){
+		if (!temp_Lines.isEmpty()) {
 			for (Shape shape : temp_Lines) {
 				Graphics2D g2 = (Graphics2D) g;
 				g2.draw(shape);
 			}
 		}
-		
 
 	}
 
@@ -140,19 +137,50 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 	}
 
 	public void mousePressed(MouseEvent me) {
-		//variables
+		// variables
 		Shape shape = null;
-		
+		GeneralPath closed_polygon = null; 
+
 		// if left mouse button
 		if (SwingUtilities.isLeftMouseButton(me)) {
-			//System.out.println("LEFT CLICK!!!"); 
-			
+			// System.out.println("LEFT CLICK!!!");
+
+			// open polygon
+			if (shapeType.equals("OpenPolygon")) {
+				if (polygon_first) {
+					// System.out.println("FIRST TIME");
+					x1 = me.getX();
+					y1 = me.getY();
+
+					polygon_xPoints.add(x1);
+					polygon_yPoints.add(y1);
+
+					polygon_first = false;
+				} else {
+					// System.out.println("Not first time");
+					x2 = me.getX();
+					y2 = me.getY();
+
+					polygon_xPoints.add(x2);
+					polygon_yPoints.add(y2);
+
+					shape = new Line2D.Double(x1, y1, x2, y2);
+					x1 = x2;
+					y1 = y2;
+				}
+				// add the temporary line2d to temp_Lines to be shown on canvas
+				if (shape != null) {
+					this.temp_Lines.add(shape);
+					this.repaint();
+				}
+			}
+
 			// closed Polygon
 			if (shapeType.equals("ClosedPolygon")) {
-				System.out.println("Closed Polygon"); 
+				System.out.println("Closed Polygon");
 				// if first time
 				if (polygon_first) {
-					//System.out.println("FIRST TIME"); 
+					// System.out.println("FIRST TIME");
 					x1 = me.getX();
 					y1 = me.getY();
 
@@ -163,18 +191,18 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				}
 				// else if not first time
 				else {
-					//System.out.println("Not first time"); 
+					// System.out.println("Not first time");
 					x2 = me.getX();
 					y2 = me.getY();
 
 					polygon_xPoints.add(x2);
 					polygon_yPoints.add(y2);
-					
-					shape = new Line2D.Double(x1, y1, x2, y2); 
-					x1 = x2; 
-					y1 = y2; 
+
+					shape = new Line2D.Double(x1, y1, x2, y2);
+					x1 = x2;
+					y1 = y2;
 				}
-				
+				// add the temporary line2d to temp_Lines to be shown on canvas
 				if (shape != null) {
 					this.temp_Lines.add(shape);
 					this.repaint();
@@ -185,55 +213,111 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 				x1 = me.getX();
 				y1 = me.getY();
 			}
-			
-			
+
 		}
 
 		// if right mouse button
 		if (SwingUtilities.isRightMouseButton(me)) {
-
-			// closed Polygon
-			if (shapeType.equals("ClosedPolygon")) {
-
-				//if there is more than one point (i.e. shape  with at least two points by definition is a polygon) 
-				if (polygon_xPoints.size() > 1){
-					int[] temp_xPoints = new int[polygon_xPoints.size()]; 
+			// open Polygon
+			if (shapeType.equals("OpenPolygon")) {
+				// if there is more than one point (i.e. shape with at least two
+				// points by definition is a polygon)
+				if (polygon_xPoints.size() > 1) {
+					//TODO: not sure if I need to add the origin points to the end of the arrayLists
+					//polygon_xPoints.add(polygon_xPoints.get(0)); 
+					//polygon_yPoints.add(polygon_yPoints.get(0)); 
+					
+					int[] temp_xPoints = new int[polygon_xPoints.size()];
 					int[] temp_yPoints = new int[polygon_yPoints.size()];
+
+					temp_xPoints = convertIntegers(polygon_xPoints);
+					temp_yPoints = convertIntegers(polygon_yPoints);
+
+					// TODO: figure out how to create open Polygon
+					//shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size());
+					closed_polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD,temp_xPoints.length); 
+					closed_polygon.moveTo(temp_xPoints[0], temp_yPoints[0]); 
 					
-					temp_xPoints = convertIntegers(polygon_xPoints); 
-					temp_yPoints = convertIntegers(polygon_yPoints); 
+					for ( int index = 1; index < temp_xPoints.length; index++ ) {
+			            closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
+			        };
+			        //closed_polygon.closePath();
 					
-					shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size()); 
 					
-					//clear temp_Lines 
-					temp_Lines.clear(); 
-					
-					polygon_xPoints.clear(); 
-					polygon_yPoints.clear(); 
-					polygon_first = true; 
-					this.prev = null; 
-					this.repaint(); 
-				}
-				//else clear the arraylist
-				else{
+					// clear temp_Lines
+					temp_Lines.clear();
+
 					polygon_xPoints.clear();
-					polygon_yPoints.clear(); 
-					
-					polygon_first = true; 
-					this.prev = null; 
+					polygon_yPoints.clear();
+					polygon_first = true;
+					this.prev = null;
 					this.repaint();
 				}
-				
-				//if the shape isn't null, add the shape to shapes to be drawn
+				// else clear the arraylist
+				else {
+					polygon_xPoints.clear();
+					polygon_yPoints.clear();
+
+					polygon_first = true;
+					this.prev = null;
+					this.repaint();
+				}
+
+				// if the shape isn't null, add the shape to shapes to be drawn
 				if (shape != null) {
 					this.shapes.add(shape);
 					this.repaint();
 				}
-				
+				//if closed_polygon isn't null, add the shape to shapes to be drawn 
+				if (closed_polygon != null ){
+					//TODO: not sure if a separate container for general path is needed 
+					this.shapes.add(closed_polygon); 
+					this.repaint(); 
+				}
+			}
+
+			// closed Polygon
+			if (shapeType.equals("ClosedPolygon")) {
+
+				// if there is more than one point (i.e. shape with at least two
+				// points by definition is a polygon)
+				if (polygon_xPoints.size() > 1) {
+					int[] temp_xPoints = new int[polygon_xPoints.size()];
+					int[] temp_yPoints = new int[polygon_yPoints.size()];
+
+					temp_xPoints = convertIntegers(polygon_xPoints);
+					temp_yPoints = convertIntegers(polygon_yPoints);
+
+					shape = new Polygon(temp_xPoints, temp_yPoints, polygon_xPoints.size());
+
+					// clear temp_Lines
+					temp_Lines.clear();
+
+					polygon_xPoints.clear();
+					polygon_yPoints.clear();
+					polygon_first = true;
+					this.prev = null;
+					this.repaint();
+				}
+				// else clear the arraylist
+				else {
+					polygon_xPoints.clear();
+					polygon_yPoints.clear();
+
+					polygon_first = true;
+					this.prev = null;
+					this.repaint();
+				}
+
+				// if the shape isn't null, add the shape to shapes to be drawn
+				if (shape != null) {
+					this.shapes.add(shape);
+					this.repaint();
+				}
+
 			}
 
 		}
-		
 
 	}
 
@@ -437,16 +521,23 @@ class SimpleDraw extends JFrame implements ActionListener, MouseListener, MouseM
 
 	@Override
 	public void mouseMoved(MouseEvent me) {
-		//temporarily draws lines for closed Polygon so user can see them 
+		// temporarily draws lines for closed Polygon so user can see them
 		Shape shape = null;
-		
-		if (shapeType.equals("ClosedPolygon") && !polygon_first) {
-			//get coords
+
+		if (shapeType.equals("OpenPolygon") && !polygon_first) {
+			// get coords
 			x2 = me.getX();
 			y2 = me.getY();
-			
 
-			shape = new Line2D.Double(x1, y1, x2, y2); 
+			shape = new Line2D.Double(x1, y1, x2, y2);
+		}
+
+		if (shapeType.equals("ClosedPolygon") && !polygon_first) {
+			// get coords
+			x2 = me.getX();
+			y2 = me.getY();
+
+			shape = new Line2D.Double(x1, y1, x2, y2);
 		}
 		if (shape != null) {
 			this.prev = shape;
