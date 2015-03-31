@@ -50,6 +50,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 	private static final int HIT_BOX_SIZE = 2;
 	// select global variables
 	Shape selectedShape;
+	Shape cutShape = null;
 	Rectangle2D handleRectangle;
 	Cursor curCursor;
 	Rectangle tempRect = null;
@@ -65,6 +66,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 	ArrayList<Integer> color = new ArrayList<Integer>();
 	ArrayList<Shape> shapes = new ArrayList<Shape>();
 	Shape prev = null;
+	int previousColor = -1;
 	String shapeType = "Rectangle";
 	Stack<ArrayList<Shape>> stack = new Stack<ArrayList<Shape>>();
 	Stack<ArrayList<Shape>> redostack = new Stack<ArrayList<Shape>>();
@@ -110,7 +112,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		setBackground(Color.white);
 		stack.push(shapes);
 		colorstack.push(color);
-		System.out.println("initial color stack: " + colorstack.toString()); 
+		System.out.println("initial color stack: " + colorstack.toString());
 		System.out.println("initial stack:" + stack.toString());
 		// add check box group
 		ButtonGroup cbg = new ButtonGroup();
@@ -124,7 +126,10 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		JRadioButton openPolygonButton = new JRadioButton("OpenPolygon");
 		JRadioButton closedPolygonButton = new JRadioButton("ClosedPolygon");
 		JRadioButton selectButton = new JRadioButton("Select");
-		JRadioButton cutPasteButton = new JRadioButton("Cut/Paste");
+
+		// cut, paste, undo, redo buttons
+		JButton cutButton = new JButton("Cut");
+		JButton pasteButton = new JButton("Paste");
 
 		JButton undo = new JButton("Undo");
 		JButton redo = new JButton("Redo");
@@ -138,11 +143,12 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		cbg.add(openPolygonButton);
 		cbg.add(closedPolygonButton);
 		cbg.add(selectButton);
-		cbg.add(cutPasteButton);
+
+		cbg.add(cutButton);
+		cbg.add(pasteButton);
 		cbg.add(undo);
 		cbg.add(redo);
 
-		cutPasteButton.addActionListener(this);
 		freehandButton.addActionListener(this);
 		lineButton.addActionListener(this);
 		ovalButton.addActionListener(this);
@@ -152,6 +158,148 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		openPolygonButton.addActionListener(this);
 		closedPolygonButton.addActionListener(this);
 		selectButton.addActionListener(this);
+		cutButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// System.out.println("Cut Something Clicked");
+
+				if (selectedShape != null) {
+					System.out.println("selectedShape in cut: " + selectedShape.toString());
+					cutShape = selectedShape;
+
+					for (int i = 0; i < shapes.size(); i++) {
+						if (shapes.get(i).equals(selectedShape)) {
+							System.out.println("Cutting shape now");
+
+							// remove shape from shapes
+							shapes.remove(i);
+							// temporarily get the color of the shape and set it
+							// to previousColor
+							previousColor = color.get(i);
+
+							// remove the color of the shape from shapes
+							color.remove(i);
+
+							prev = null;
+							selectedShape = null;
+							repaint();
+						}
+					}
+
+				} else
+					return;
+
+			}
+
+		});
+
+		pasteButton.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			// TODO: fix paste shape
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println("Paste Something Clicked");
+
+				if (cutShape != null) {
+
+					// TODO: make sure all shapes are included
+					// System.out.println("cutShape" +
+					// cutShape.getClass().getSimpleName());
+					if (cutShape.getClass().getSimpleName().equals("Rectangle")) {
+						Rectangle temp = (Rectangle) cutShape;
+
+						double h = temp.getHeight();
+						double w = temp.getWidth();
+
+						temp = new Rectangle();
+						temp.x = x2;
+						temp.y = y2;
+						temp.height = (int) h;
+						temp.width = (int) w;
+
+						shapes.add(temp);
+
+						color.add(previousColor);
+						previousColor = -1;
+
+						repaint();
+						temp = null;
+					} else if (cutShape.getClass().getCanonicalName().equals("java.awt.geom.Ellipse2D.Double")) {
+						Ellipse2D.Double temp = (Ellipse2D.Double) cutShape;
+
+						double x = x2;
+						double y = y2;
+						double h = temp.height;
+						double w = temp.width;
+
+						temp = new Ellipse2D.Double(x, y, w, h);
+						shapes.add(temp);
+						color.add(previousColor);
+						previousColor = -1;
+
+						repaint();
+						temp = null;
+					} else if (cutShape.getClass().getSimpleName().equals("Polygon")) {
+						Polygon temp = (Polygon) cutShape;
+
+						// int[] temp_x_points = temp.xpoints;
+						// int[] temp_y_points = temp.ypoints;
+						int x = temp.xpoints[0];
+						int y = temp.ypoints[0];
+
+						// System.out.println("x: " + x);
+						// System.out.println("x2: " + x2);
+
+						temp.translate(x2 - x, y2 - y);
+						Polygon temp2 = new Polygon(temp.xpoints, temp.ypoints, temp.npoints);
+						shapes.add(temp2);
+
+						color.add(previousColor);
+						previousColor = -1;
+
+						repaint();
+						temp = null;
+					} else if (cutShape.getClass().getSimpleName().equals("GeneralPath")) {
+						//TODO: 
+						GeneralPath temp = (GeneralPath) cutShape; 
+						
+						
+					} else if (cutShape.getClass().getCanonicalName().equals("java.awt.geom.Line2D.Double")) {
+						//TODO: 
+					}
+					
+
+				} else
+					return;
+
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+		});
+
 		undo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				System.out.println("Hoho");
@@ -201,7 +349,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		radioPanel.add(openPolygonButton);
 		radioPanel.add(closedPolygonButton);
 		radioPanel.add(selectButton);
-		radioPanel.add(cutPasteButton);
+
 		radioPanel.add(undo);
 		radioPanel.add(redo);
 
@@ -222,6 +370,8 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 		int index = 0;
 		g.setColor(Color.BLACK);
+
+		// drawing shapes
 		for (Shape shape : shapes) {
 			Graphics2D g2 = (Graphics2D) g;
 			if (!color.isEmpty()) {
@@ -255,11 +405,44 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			g2.draw(shape);
 		}
 
+		// drawing prev
 		if (prev != null) {
 			Graphics2D g2 = (Graphics2D) g;
+
+			if (selectedShape != null)
+				previousColor = color.get(shapes.indexOf(selectedShape));
+			else
+				previousColor = currentColor;
+			// currentColor= prevColor;
+			switch (previousColor) {
+			case BLACK:
+				g2.setColor(Color.BLACK);
+				break;
+			case RED:
+				g2.setColor(Color.RED);
+				break;
+			case GREEN:
+				g2.setColor(Color.GREEN);
+				break;
+			case BLUE:
+				g2.setColor(Color.BLUE);
+				break;
+			case CYAN:
+				g2.setColor(Color.CYAN);
+				break;
+			case MAGENTA:
+				g2.setColor(Color.MAGENTA);
+				break;
+			case YELLOW:
+				g2.setColor(Color.YELLOW);
+				break;
+
+			}
 			g2.draw(prev);
+
 		}
 
+		// drawing temp_lines
 		if (!temp_Lines.isEmpty()) {
 			for (Shape shape : temp_Lines) {
 				Graphics2D g2 = (Graphics2D) g;
@@ -409,8 +592,10 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 							} else if (selectedShape.getClass().getSimpleName().equals("GeneralPath")) {
 								tempGeneral = new GeneralPath(selectedShape);
 
-							} else if (selectedShape.getClass().getCanonicalName()
-									.equals("java.awt.geom.Line2D.Double")) {
+							} // TODO: //else if(){
+
+							// }
+							else if (selectedShape.getClass().getCanonicalName().equals("java.awt.geom.Line2D.Double")) {
 								Line2D.Double temp_line = (Line2D.Double) shapes.get(i);
 
 								double temp_x1 = temp_line.x1;
@@ -439,7 +624,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			// open polygon
 			if (shapeType.equals("OpenPolygon")) {
 				if (polygon_first) {
-					// System.out.println("FIRST TIME");
+					System.out.println("FIRST TIME");
 					x1 = me.getX();
 					y1 = me.getY();
 
@@ -448,7 +633,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 					polygon_first = false;
 				} else {
-					// System.out.println("Not first time");
+					System.out.println("Not first time");
 					x2 = me.getX();
 					y2 = me.getY();
 
@@ -693,7 +878,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			if (shapeType.equals("Select")) {
 				for (int i = 0; i < shapes.size(); i++) {
 					if (shapes.get(i).intersects(boxX - 30, boxY - 30, boxWidth + 60, boxHeight + 60)
-							&& selectedShape.equals(shapes.get(i))) {
+							&& selectedShape.equals(shapes.get(i)) && selectedShape != null) {
 						currentColor = color.get(i);
 						g.setColor(Color.BLACK);
 						// TODO: figure out a way to get the x, y coords of a
@@ -856,11 +1041,34 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("FreeHand")) {
-				shape = new Line2D.Double(x1, y1, x2, y2);
+				// shape = new Line2D.Double(x1, y1, x2, y2);
 
-				x1 = x2;
-				y1 = y2;
+				if (polygon_first) {
+					System.out.println("FIRST TIME");
+					x1 = me.getX();
+					y1 = me.getY();
 
+					polygon_xPoints.add(x1);
+					polygon_yPoints.add(y1);
+
+					polygon_first = false;
+				} else {
+					System.out.println("Not first time");
+					x2 = me.getX();
+					y2 = me.getY();
+
+					polygon_xPoints.add(x2);
+					polygon_yPoints.add(y2);
+
+					shape = new Line2D.Double(x1, y1, x2, y2);
+					x1 = x2;
+					y1 = y2;
+				}
+				// add the temporary line2d to temp_Lines to be shown on canvas
+				if (shape != null) {
+					this.temp_Lines.add(shape);
+					this.repaint();
+				}
 			}
 
 			if (shapeType.equals("Line")) {
@@ -910,9 +1118,10 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			this.prev = shape;
 			this.repaint();
 		}
+
 		if (shape != null && shapeType.equals("FreeHand")) {
-			this.shapes.add(shape);
-			this.color.add(currentColor);
+			// this.shapes.add(shape);
+			// this.color.add(currentColor);
 			this.repaint();
 		}
 
@@ -922,6 +1131,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		x2 = me.getX();
 		y2 = me.getY();
 		Shape shape = null;
+		GeneralPath closed_polygon = null;
 
 		int x1_old = x1;
 		int boxX = me.getX() - HIT_BOX_SIZE / 2;
@@ -991,10 +1201,14 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 							this.shapes = new ArrayList<Shape>(shapes);
 							this.color = new ArrayList<Integer>(color);
+
 							this.shapes.remove(i);
 							this.shapes.add(i, prev);
 							this.stack.push(shapes);
-							this.color.add(currentColor);
+
+							this.color.remove(i);
+							this.color.add(i,currentColor);// TODO: should be
+															// previous color
 							this.colorstack.push(color);
 
 							this.repaint();
@@ -1005,7 +1219,9 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 					}
 
-					System.out.println("moved" + stack.toString());
+					// TODO:
+					System.out.println("moved stack: " + stack.toString());
+					System.out.println("moved colour stack: " + colorstack.toString());
 				}
 			}
 
@@ -1050,7 +1266,68 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("FreeHand")) {
-				shape = new Line2D.Double(x1, y1, x2, y2);
+				// shape = new Line2D.Double(x1, y1, x2, y2);
+				if (polygon_xPoints.size() > 1) {
+
+					int[] temp_xPoints = new int[polygon_xPoints.size()];
+					int[] temp_yPoints = new int[polygon_yPoints.size()];
+
+					temp_xPoints = convertIntegers(polygon_xPoints);
+					temp_yPoints = convertIntegers(polygon_yPoints);
+
+					closed_polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD, temp_xPoints.length);
+					closed_polygon.moveTo(temp_xPoints[0], temp_yPoints[0]);
+
+					for (int index = 1; index < temp_xPoints.length; index++) {
+						closed_polygon.lineTo(temp_xPoints[index], temp_yPoints[index]);
+					}
+
+					// clear temp_Lines
+					temp_Lines.clear();
+
+					polygon_xPoints.clear();
+					polygon_yPoints.clear();
+					polygon_first = true;
+					this.prev = null;
+					this.repaint();
+				}
+				// else clear the arraylist
+				else {
+					polygon_xPoints.clear();
+					polygon_yPoints.clear();
+
+					polygon_first = true;
+					this.prev = null;
+					this.repaint();
+				}
+
+				// if the shape isn't null, add the shape to shapes to be drawn
+				if (shape != null) {
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+
+					this.shapes.add(shape);
+					stack.push(shapes);
+					this.color.add(currentColor);
+					colorstack.push(color);
+
+					System.out.println("shape stack: " + stack.toString());
+					this.repaint();
+				}
+				if (closed_polygon != null) {
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+
+					this.shapes.add(closed_polygon);
+					stack.push(shapes);
+					this.color.add(currentColor);
+					colorstack.push(color);
+
+					System.out.println("freehand stack: " + stack.toString());
+					System.out.println("freehand colorstack: " + colorstack.toString());
+					this.repaint();
+				}
+
 				x1 = x2;
 				y1 = y2;
 			}
@@ -1112,7 +1389,9 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			this.colorstack.push(color);
 
 			this.repaint();
-			System.out.println("new" + stack.toString());
+			// TODO:
+			System.out.println("new stack: " + stack.toString());
+			System.out.println("new color stack: " + colorstack.toString());
 
 		}
 	}
@@ -1128,7 +1407,6 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		int boxWidth = HIT_BOX_SIZE;
 		int boxHeight = HIT_BOX_SIZE;
 
-		// TODO: cursor changes when you hover over a shape
 		if (shapeType.equals("Select")) {
 			for (int i = 0; i < shapes.size(); i++) {
 				if (!shapes.isEmpty()) {
