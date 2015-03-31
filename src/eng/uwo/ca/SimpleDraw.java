@@ -520,15 +520,27 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 				// if the shape isn't null, add the shape to shapes to be drawn
 				if (shape != null) {
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+					
 					this.shapes.add(shape);
+					stack.push(shapes);
 					this.color.add(currentColor);
+					colorstack.push(color);
+					
 					this.repaint();
 				}
 				// if closed_polygon isn't null, add the shape to shapes to be
 				// drawn
 				if (closed_polygon != null) {
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+					
 					this.shapes.add(closed_polygon);
+					stack.push(shapes);
 					this.color.add(currentColor);
+					colorstack.push(color);
+					
 					this.repaint();
 				}
 			}
@@ -568,21 +580,19 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 				// if the shape isn't null, add the shape to shapes to be drawn
 				if (shape != null) {
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+					
 					this.shapes.add(shape);
-					this.repaint();
+					stack.push(shapes);
 					this.color.add(currentColor);
+					colorstack.push(color);
+					
+					this.repaint();
 				}
 
 			}
-			this.shapes = new ArrayList<Shape>(shapes);
-			this.color = new ArrayList<Integer>(color);
 			
-			this.shapes.add(prev);
-			stack.push(shapes);
-			this.color.add(currentColor);
-			colorstack.push(color);
-			
-			this.repaint();
 			//System.out.println(stack.toString());
 
 		}
