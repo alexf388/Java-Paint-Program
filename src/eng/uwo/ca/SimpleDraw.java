@@ -63,8 +63,9 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 	Shape prev = null;
 	String shapeType = "Rectangle";
 	Stack<ArrayList<Shape>> stack = new Stack<ArrayList<Shape>>();
-	
-	
+	Stack<ArrayList<Shape>> redostack = new Stack<ArrayList<Shape>>();
+	Stack<ArrayList<Integer>> colorstack = new Stack<ArrayList<Integer>>();
+	Stack<ArrayList<Integer>> colorredostack = new Stack<ArrayList<Integer>>();
 	
 	public static int[] convertIntegers(List<Integer> integers) {
 		int[] ret = new int[integers.size()];
@@ -104,10 +105,11 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 		setBackground(Color.white);
 		stack.push(shapes);
+		colorstack.push(color);
 		System.out.println(stack.toString());
 		// add check box group
 		ButtonGroup cbg = new ButtonGroup();
-		ButtonGroup color = new ButtonGroup();
+		
 		JRadioButton freehandButton = new JRadioButton("FreeHand");
 		JRadioButton lineButton = new JRadioButton("Line");
 		JRadioButton ovalButton = new JRadioButton("Oval");
@@ -120,7 +122,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		JRadioButton cutPasteButton = new JRadioButton("Cut/Paste");
 
 		JButton undo = new JButton("Undo");
-		
+		JButton redo = new JButton("Redo");
 		
 		
 		cbg.add(freehandButton);
@@ -134,6 +136,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		cbg.add(selectButton);
 		cbg.add(cutPasteButton);
 		cbg.add(undo);
+		cbg.add(redo);
 
 		
 
@@ -150,14 +153,36 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		undo.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
 				System.out.println("Hoho");
-				if (stack.size()>1){
+				if (stack.size()>1 && colorstack.size()>1){
 					System.out.println("before: " + stack.toString());
-					stack.pop();
-					shapes.clear();
-					shapes.addAll(stack.peek());
+					
+					colorredostack.push(colorstack.pop());
+					redostack.push(stack.pop());
+					
+					color = new ArrayList<Integer>(colorstack.peek());
+					shapes = new ArrayList<Shape>(stack.peek());
+					
 					System.out.println("after" + stack.toString());
 					repaint();
+					if (redostack.size()>3){
+						redostack.remove(redostack.size()-4);
+					}
 				}
+			}
+		});
+		redo.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				
+				if (redostack.size()>0){
+					System.out.println("redo: " + redostack.toString());
+					color = new ArrayList<Integer>(colorredostack.peek());
+					shapes = new ArrayList<Shape>(redostack.peek());
+					colorstack.push(colorredostack.pop());
+					stack.push(redostack.pop());
+					repaint();
+				}
+				
+			
 			}
 		});
 		// rectangleButton is default
@@ -177,6 +202,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		radioPanel.add(selectButton);
 		radioPanel.add(cutPasteButton);
 		radioPanel.add(undo);
+		radioPanel.add(redo);
 
 		radioPanel1.setLayout(new BoxLayout(radioPanel1, BoxLayout.Y_AXIS));
 
@@ -198,7 +224,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		g.setColor(Color.BLACK);
 		for (Shape shape : shapes) {
 			Graphics2D g2 = (Graphics2D) g;
-
+			if (!color.isEmpty()){
 			switch (color.get(index)) {
 			case BLACK:
 				g2.setColor(Color.BLACK);
@@ -222,6 +248,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 				g2.setColor(Color.YELLOW);
 				break;
 
+			}
 			}
 			index++;
 
@@ -348,6 +375,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 					if (!shapes.isEmpty()) {
 						if (shapes.get(i).contains(me.getX(), me.getY())) {
 							selectedShape = shapes.get(i);
+							
 							currentColor = color.get(i);
 							if (handleRectangle != null)
 								handleRectangle = shapes.get(i).getBounds2D();
@@ -548,9 +576,15 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 				}
 
 			}
-			ArrayList<Shape> templist = new ArrayList<Shape>();
-			templist.addAll(shapes);
-			stack.push(templist);
+			this.shapes = new ArrayList<Shape>(shapes);
+			this.color = new ArrayList<Integer>(color);
+			
+			this.shapes.add(prev);
+			stack.push(shapes);
+			this.color.add(currentColor);
+			colorstack.push(color);
+			
+			this.repaint();
 			//System.out.println(stack.toString());
 
 		}
@@ -824,7 +858,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 
 		}
 
-		if (shape != null && shapeType.equals("Select")) {
+		if (shape != null && !shapeType.equals("Select")) {
 			this.prev = shape;
 			this.repaint();
 		}
@@ -871,11 +905,15 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 					this.repaint();
 				}
 				if (prev != null){
-					//this.shapes.add(prev);
-					ArrayList<Shape> templist = new ArrayList<Shape>();
-					templist.addAll(shapes);
-					stack.push(templist);
+					
+					this.shapes = new ArrayList<Shape>(shapes);
+					this.color = new ArrayList<Integer>(color);
+					
+					this.shapes.add(prev);
+					this.stack.push(shapes);
 					this.color.add(currentColor);
+					this.colorstack.push(color);
+					
 					this.repaint();
 					prev = null;
 					System.out.println(stack.toString());
@@ -974,11 +1012,15 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		
 		if (shape != null && (!shapeType.equals("Select"))) {
 			prev = null;
+			
+			this.shapes = new ArrayList<Shape>(shapes);
+			this.color = new ArrayList<Integer>(color);
+			
 			this.shapes.add(shape);
-			ArrayList<Shape> templist = new ArrayList<Shape>();
-			templist.addAll(shapes);
-			stack.push(templist);
+			this.stack.push(shapes);
 			this.color.add(currentColor);
+			this.colorstack.push(color);
+			
 			this.repaint();
 			System.out.println(stack.toString());
 		}
