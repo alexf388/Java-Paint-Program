@@ -373,20 +373,18 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			if (shapeType.equals("Select")) {
 				for (int i = 0; i < shapes.size(); i++) {
 					if (!shapes.isEmpty()) {
-						if (shapes.get(i).contains(me.getX(), me.getY())) {
+						
+						if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)) {
+							
 							selectedShape = shapes.get(i);
 							
 							currentColor = color.get(i);
-							if (handleRectangle != null)
-								handleRectangle = shapes.get(i).getBounds2D();
-						} else {
-							handleRectangle = null;
-						}
-
-						if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)) {
-							System.out.println("COME ON MOTHERFUCKER");
-							selectedShape = shapes.get(i);
-							currentColor = color.get(i);
+							
+							
+							
+							
+							
+							
 							if (handleRectangle != null)
 								handleRectangle = shapes.get(i).getBounds2D();
 						} else {
@@ -913,10 +911,10 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 					this.stack.push(shapes);
 					this.color.add(currentColor);
 					this.colorstack.push(color);
-					
+
 					this.repaint();
 					prev = null;
-					System.out.println(stack.toString());
+					System.out.println("moved" + stack.toString());
 				}
 			}
 
@@ -1012,17 +1010,19 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		
 		if (shape != null && (!shapeType.equals("Select"))) {
 			prev = null;
-			
+		
 			this.shapes = new ArrayList<Shape>(shapes);
 			this.color = new ArrayList<Integer>(color);
 			
 			this.shapes.add(shape);
+			
 			this.stack.push(shapes);
 			this.color.add(currentColor);
 			this.colorstack.push(color);
 			
 			this.repaint();
-			System.out.println(stack.toString());
+			System.out.println("new" +stack.toString());
+			
 		}
 	}
 
@@ -1108,5 +1108,9 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 		g2D.fill(new Rectangle.Double(x + w * 0.5 - 3.0, y + h - 3.0, 6.0, 6.0));
 		g2D.fill(new Rectangle.Double(x + w - 3.0, y + h - 3.0, 6.0, 6.0));
 	}
+	
+	
+	
+	
 
 }
