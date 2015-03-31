@@ -100,10 +100,12 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 	}
 
 	public SimpleDraw() {
-
+		System.out.println("SimpleDraw!!!"); 
 		// createMenuBar();
 
 		setBackground(Color.white);
+		//TODO: it all starts from the beginning
+		this.shapes = new ArrayList<Shape>(shapes);
 		stack.push(shapes);
 		colorstack.push(color);
 		System.out.println(stack.toString());
@@ -376,7 +378,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 						
 						if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)) {
 							
-							selectedShape = shapes.get(i);
+							prev = shapes.get(i);
 							
 							currentColor = color.get(i);
 							
@@ -655,7 +657,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			if (shapeType.equals("Select")) {
 				for (int i = 0; i < shapes.size(); i++) {
 					if (shapes.get(i).intersects(boxX - 30, boxY - 30, boxWidth + 60, boxHeight + 60)
-							&& selectedShape.equals(shapes.get(i))) {
+							&& prev.equals(shapes.get(i))) {
 						currentColor = color.get(i);
 						g.setColor(Color.BLACK);
 						// TODO: figure out a way to get the x, y coords of a
@@ -744,7 +746,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 							y1 = y2;
 						}
 
-						else if (selectedShape.equals(shapes.get(i))) {
+						else if (prev.equals(shapes.get(i))) {
 							System.out.println("Fuck this motherfucker");
 							System.out.println("shape name: " + shapes.get(i).getClass().getSimpleName());
 							System.out.println("canonical name: " + shapes.get(i).getClass().getCanonicalName());
@@ -816,10 +818,8 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("FreeHand")) {
-				shape = new Line2D.Double(x1, y1, x2, y2);
-
-				x1 = x2;
-				y1 = y2;
+				//TODO: 
+				
 
 			}
 
@@ -904,16 +904,15 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 				for (int i = 0; i < shapes.size(); i++) {
 					if (shapes.get(i).contains(me.getX(), me.getY())) {
 						handleRectangle = shapes.get(i).getBounds2D();
-						selectedShape = shapes.get(i);
+						prev= shapes.get(i);
 					}
 					if (shapes.get(i).intersects(boxX, boxY, boxWidth, boxHeight)) {
 						handleRectangle = shapes.get(i).getBounds2D();
-						selectedShape = shapes.get(i);
+						prev = shapes.get(i);
 					}
 					this.repaint();
 				}
 				if (prev != null){
-					
 					this.shapes = new ArrayList<Shape>(shapes);
 					this.color = new ArrayList<Integer>(color);
 					
@@ -969,9 +968,7 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			}
 
 			if (shapeType.equals("FreeHand")) {
-				shape = new Line2D.Double(x1, y1, x2, y2);
-				x1 = x2;
-				y1 = y2;
+				//TODO: 
 			}
 
 			if (shapeType.equals("Line")) {
@@ -1022,12 +1019,12 @@ class SimpleDraw extends JPanel implements ActionListener, MouseListener, MouseM
 			prev = null;
 		
 			this.shapes = new ArrayList<Shape>(shapes);
-			this.color = new ArrayList<Integer>(color);
-			
 			this.shapes.add(shape);
 			
-			this.stack.push(shapes);
+			this.color = new ArrayList<Integer>(color);
 			this.color.add(currentColor);
+			
+			this.stack.push(shapes);
 			this.colorstack.push(color);
 			
 			this.repaint();
